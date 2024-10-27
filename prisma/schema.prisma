@@ -1,0 +1,335 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model allergy {
+  id                 Int                  @id @default(autoincrement())
+  timestamp_add      BigInt               @default(0)
+  timestamp_updated  BigInt               @default(0)
+  name               String               @db.MediumText
+  uniqid             String               @db.VarChar(250)
+  allergy_ingredient allergy_ingredient[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model allergy_ingredient {
+  id                Int        @id @default(autoincrement())
+  uniqid_ingredient String     @db.VarChar(100)
+  uniqid_allergy    String     @db.VarChar(100)
+  allergy           allergy    @relation(fields: [uniqid_allergy], references: [uniqid], onUpdate: Restrict, map: "allergy_ingredient_ibfk_1")
+  ingredient        ingredient @relation(fields: [uniqid_ingredient], references: [uniqid], onUpdate: Restrict, map: "allergy_ingredient_ibfk_2")
+
+  @@index([uniqid_allergy], map: "uniqid_allergy")
+  @@index([uniqid_ingredient], map: "uniqid_ingredient")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model article {
+  id                Int            @id @default(autoincrement())
+  title             String         @db.MediumText
+  subtitle          String?        @db.MediumText
+  description       String?        @db.MediumText
+  uniqid            String         @db.VarChar(250)
+  timestamp_add     BigInt
+  timestamp_updated BigInt         @default(0)
+  abstract          String?        @db.MediumText
+  content           String?        @db.MediumText
+  visible           Boolean        @default(false)
+  source            String?        @db.MediumText
+  display           Int?           @default(1)
+  article_file      article_file[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model article_file {
+  id                Int      @id @default(autoincrement())
+  timestamp_add     BigInt   @default(0)
+  timestamp_updated BigInt   @default(0)
+  uniqid            BigInt
+  uniqid_article    String   @db.VarChar(100)
+  path_file         String?  @db.MediumText
+  visible           Boolean? @default(true)
+  title             String?  @db.MediumText
+  description       String?  @db.MediumText
+  article           article  @relation(fields: [uniqid_article], references: [uniqid], onUpdate: Restrict, map: "article_file_ibfk_1")
+
+  @@index([uniqid_article], map: "id_article")
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model category {
+  id                Int       @id @default(autoincrement())
+  timestamp_add     BigInt    @default(0)
+  timestamp_updated BigInt    @default(0)
+  uniqid            String    @db.VarChar(100)
+  name              String    @db.MediumText
+  color             String    @default("#ffffff") @db.VarChar(9)
+  product           product[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+
+}
+
+model ingredient {
+  id                 Int                  @id @default(autoincrement())
+  uniqid             String               @db.VarChar(100)
+  timestamp_add      BigInt               @default(0)
+  timestamp_updated  BigInt               @default(0)
+  name               String               @db.MediumText
+  description        String               @db.MediumText
+  origin             String               @db.MediumText
+  allergy_ingredient allergy_ingredient[]
+  label_ingredient   label_ingredient[]
+  product_ingredient product_ingredient[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model institution {
+  id                  Int        @id @default(autoincrement())
+  uniqid              String     @db.VarChar(250)
+  name                String     @db.MediumText
+  subname             String     @db.MediumText
+  description         String     @db.MediumText
+  slogan              String     @db.MediumText
+  major_news          String?    @db.MediumText
+  email               String     @db.MediumText
+  location_google_map String?    @db.MediumText
+  address             String?    @db.MediumText
+  phone_number        String     @db.VarChar(15)
+  timestamp_add       BigInt
+  timestamp_updated   BigInt?
+  settings            settings[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model kind_price {
+  id                Int              @id @default(autoincrement())
+  uniqid            String           @db.VarChar(100)
+  timestamp_add     BigInt           @default(0)
+  timestamp_updated BigInt           @default(0)
+  name              String           @db.Text
+  description       String?          @db.Text
+  visible           Boolean          @default(false)
+  quantity_price    quantity_price[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model label {
+  id                Int                @id @default(autoincrement())
+  timestamp_add     BigInt             @default(0)
+  timestamp_updated BigInt             @default(0)
+  name              String             @db.MediumText
+  uniqid            String             @db.VarChar(250)
+  certifying        String?            @db.MediumText
+  description       String?            @db.MediumText
+  label_ingredient  label_ingredient[]
+  label_product     label_product[]
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model label_ingredient {
+  id                Int        @id @default(autoincrement())
+  uniqid_ingredient String     @db.VarChar(100)
+  uniqid_label      String     @db.VarChar(100)
+  ingredient        ingredient @relation(fields: [uniqid_ingredient], references: [uniqid], onUpdate: Restrict, map: "label_ingredient_ibfk_1")
+  label             label      @relation(fields: [uniqid_label], references: [uniqid], onUpdate: Restrict, map: "label_ingredient_ibfk_2")
+
+  @@index([uniqid_ingredient], map: "uniqid_ingredient")
+  @@index([uniqid_label], map: "uniqid_label")
+}
+
+model label_product {
+  id             Int     @id @default(autoincrement())
+  uniqid_product String  @db.VarChar(100)
+  uniqid_label   String  @db.VarChar(100)
+  label          label   @relation(fields: [uniqid_label], references: [uniqid], onUpdate: Restrict, map: "label_product_ibfk_1")
+  product        product @relation(fields: [uniqid_product], references: [uniqid], onUpdate: Restrict, map: "label_product_ibfk_2")
+
+  @@index([uniqid_label], map: "uniqid_label")
+  @@index([uniqid_product], map: "uniqid_product")
+}
+
+model market {
+  id                  Int     @id @default(autoincrement())
+  uniqid              String  @db.VarChar(100)
+  title               String  @db.MediumText
+  location_google_map String? @db.MediumText
+  address             String? @db.MediumText
+  schedule            String? @db.MediumText
+  preorder            Boolean @default(false)
+  mail                String? @db.VarChar(255)
+  referent            String? @db.VarChar(255)
+  phone_number        String? @db.VarChar(255)
+  site                String? @db.MediumText
+  order_link          String  @default("0") @db.VarChar(255)
+  howtoorder          String? @db.MediumText
+  visible             Boolean @default(true)
+  comment             String? @db.MediumText
+  timestamp_add       BigInt
+  timestamp_updated   BigInt
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model page {
+  id                Int      @id @default(autoincrement())
+  timestamp_add     BigInt   @default(0)
+  timestamp_updated BigInt   @default(0)
+  uniqid            String   @db.VarChar(250)
+  name              String   @db.VarChar(100)
+  keyword           String?  @db.Text
+  url_name          String?  @db.VarChar(100)
+  public            Boolean?
+  order_num         Int      @default(10)
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model product {
+  id                    Int                     @id @default(autoincrement())
+  name                  String                  @db.MediumText
+  description           String?                 @db.MediumText
+  category_id           Int
+  uniqid                String                  @db.VarChar(250)
+  timestamp_add         BigInt
+  timestamp_updated     BigInt
+  calorie               String?                 @db.MediumText
+  available             Boolean?                @default(false)
+  visible               Boolean                 @default(true)
+  color                 String                  @default("#ffffff") @db.VarChar(9)
+  comment               String?                 @db.MediumText
+  order_num             Int?                    @default(10)
+  label_product         label_product[]
+  category              category                @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_1")
+  product_ingredient    product_ingredient[]
+  settings_product_push settings_product_push[]
+
+  @@index([category_id], map: "category_id")
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model quantity_price {
+  id                Int              @id @default(autoincrement())
+  uniqid_quantity   String           @db.VarChar(100)
+  uniqid_kind_price String           @db.VarChar(100)
+  price             String           @db.Text
+  kind_price        kind_price       @relation(fields: [uniqid_kind_price], references: [uniqid], onUpdate: Restrict, map: "quantity_price_ibfk_1")
+  product_quantity  product_quantity @relation(fields: [uniqid_quantity], references: [uniqid], onUpdate: Restrict, map: "quantity_price_ibfk_2")
+
+  @@index([uniqid_kind_price], map: "id_kind_price")
+  @@index([uniqid_quantity], map: "id_quantity")
+  @@index([uniqid_quantity], map: "uniqid_quantity")
+}
+
+model section {
+  id                Int      @id @default(autoincrement())
+  timestamp_add     BigInt   @default(0)
+  timestamp_updated BigInt   @default(0)
+  uniqid            String   @db.VarChar(255)
+  content           String?  @db.Text
+  uniqid_page       Int
+  type              String   @db.VarChar(100)
+  order_num         Int?     @default(10)
+  visible           Boolean? @default(false)
+
+  @@index([uniqid_page], map: "id_page")
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model stats {
+  id         Int      @id @default(autoincrement())
+  timestamp  BigInt
+  system     String   @db.Text
+  nb_request Int      @default(1)
+  country    String?  @db.Text
+  regionName String?  @db.Text
+  city       String?  @db.Text
+  zip        String?  @db.Text
+  district   String?  @db.Text
+  timezone   String?  @db.Text
+  isp        String?  @db.Text
+  as_number  String?  @db.Text
+  mobile     Boolean?
+}
+
+model user {
+  id             Int     @id @default(autoincrement())
+  uniqid         String  @db.VarChar(255)
+  token          String  @db.VarChar(255)
+  email          String  @db.VarChar(255)
+  pseudo         String  @db.VarChar(255)
+  hash           String  @db.VarChar(512)
+  is_admin       Boolean @default(false)
+  timestamp_add  BigInt
+  last_connexion BigInt?
+
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model product_ingredient {
+  id                Int        @id @default(autoincrement())
+  uniqid_product    String     @db.VarChar(100)
+  uniqid_ingredient String     @db.VarChar(100)
+  quantity          String?    @db.MediumText
+  ingredient        ingredient @relation(fields: [uniqid_ingredient], references: [uniqid], onUpdate: Restrict, map: "product_ingredient_ibfk_1")
+  product           product    @relation(fields: [uniqid_product], references: [uniqid], onUpdate: Restrict, map: "product_ingredient_ibfk_2")
+
+  @@index([uniqid_ingredient], map: "id_ingredient")
+  @@index([uniqid_product], map: "id_product")
+}
+
+model product_quantity {
+  id             Int              @id @default(autoincrement())
+  uniqid         String           @db.VarChar(100)
+  uniqid_product String           @db.VarChar(100)
+  weight         String           @db.MediumText
+  quantity_price quantity_price[]
+
+  @@index([uniqid_product], map: "id_product")
+  @@index([uniqid], map: "uniqid")
+  @@unique([uniqid])
+}
+
+model settings {
+  id                 Int         @id @default(autoincrement())
+  uniqid_institution String      @db.VarChar(100)
+  visible_calorie    Boolean     @default(false)
+  visible_price      Boolean     @default(false)
+  keyword            String?     @db.Text
+  institution        institution @relation(fields: [uniqid_institution], references: [uniqid], onUpdate: Restrict, map: "settings_ibfk_1")
+
+  @@index([uniqid_institution], map: "id_institution")
+}
+
+model settings_product_push {
+  id             Int     @id @default(autoincrement())
+  uniqid_product String  @db.VarChar(100)
+  position       Int
+  product        product @relation(fields: [uniqid_product], references: [uniqid], onUpdate: Restrict, map: "settings_product_push_ibfk_1")
+
+  @@index([uniqid_product], map: "id_product")
+}
